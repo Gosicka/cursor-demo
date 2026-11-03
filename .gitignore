@@ -1,0 +1,10 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+
+# Secrets (never commit)
+.env
+.env.*
+*.pem
+credentials.json
