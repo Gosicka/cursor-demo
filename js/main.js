@@ -1,6 +1,6 @@
-import { input } from "./input.js?v=4";
-import { moveAndCollide } from "./physics.js?v=4";
-import { createPlayer, resetPlayer, updatePlayer } from "./player.js?v=4";
+import { input } from "./input.js?v=7";
+import { moveAndCollide } from "./physics.js?v=7";
+import { createPlayer, resetPlayer, updatePlayer } from "./player.js?v=7";
 import {
   cloneLevel,
   updateMoths,
@@ -8,9 +8,9 @@ import {
   collectCharms,
   hitMoth,
   reachedGoal,
-} from "./entities.js?v=4";
-import { LEVELS } from "./levels.js?v=4";
-import { drawWorld, drawTitle, drawInterlude, drawWin, W, H } from "./render.js?v=4";
+} from "./entities.js?v=7";
+import { LEVELS } from "./levels.js?v=7";
+import { drawWorld, drawTitle, drawInterlude, drawWin, W, H } from "./render.js?v=7";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -27,9 +27,23 @@ let time = 0;
 let audio;
 let pendingLevel = 0;
 
+function unlockAudio() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!audio) audio = new AC();
+    if (audio.state === "suspended") void audio.resume();
+  } catch {
+    /* ignore */
+  }
+}
+
+window.addEventListener("keydown", unlockAudio);
+
 function sfx(kind) {
   try {
-    if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+    unlockAudio();
+    if (!audio) return;
     const o = audio.createOscillator();
     const g = audio.createGain();
     o.connect(g);
@@ -65,6 +79,7 @@ function startLevel(index) {
   cameraX = 0;
   levelCollected = 0;
   flash = 0;
+  input.clearPressed();
   scene = "play";
 }
 
@@ -89,7 +104,10 @@ function frame(now) {
     }
     drawTitle(ctx, time);
   } else if (scene === "play") {
-    if (input.consume("restart")) startLevel(levelIndex);
+    if (input.consume("restart")) {
+      collectedTotal = Math.max(0, collectedTotal - levelCollected);
+      startLevel(levelIndex);
+    }
     const jumped = updatePlayer(player, input, dt);
     if (jumped) sfx("jump");
     moveAndCollide(player, world.platforms, dt);
@@ -108,6 +126,7 @@ function frame(now) {
     }
     if (reachedGoal(player, world.goal)) {
       sfx("goal");
+      input.clearPressed();
       if (levelIndex >= LEVELS.length - 1) {
         scene = "win";
       } else {

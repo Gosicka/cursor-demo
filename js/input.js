@@ -36,6 +36,16 @@ window.addEventListener("keyup", (event) => {
   down.delete(action);
 });
 
+function releaseKeys() {
+  down.clear();
+  pressed.clear();
+}
+
+window.addEventListener("blur", releaseKeys);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) releaseKeys();
+});
+
 export const input = {
   held(action) {
     return down.has(action);
@@ -44,6 +54,9 @@ export const input = {
     if (!pressed.has(action)) return false;
     pressed.delete(action);
     return true;
+  },
+  clearPressed() {
+    pressed.clear();
   },
   axis() {
     return (this.held("right") ? 1 : 0) - (this.held("left") ? 1 : 0);

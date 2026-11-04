@@ -1,6 +1,10 @@
 const W = 960;
 const H = 540;
 
+function wrap(n, m) {
+  return ((n % m) + m) % m;
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   const rr = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
@@ -46,7 +50,7 @@ function drawSky(ctx, glow) {
 function drawParallax(ctx, cameraX, time, glow) {
   ctx.fillStyle = "#1c0c30";
   for (let i = 0; i < 12; i++) {
-    const x = ((i * 180 - cameraX * 0.15) % (W + 180)) - 40;
+    const x = wrap(i * 180 - cameraX * 0.15, W + 180) - 40;
     const h = 90 + (i % 4) * 28;
     ctx.beginPath();
     ctx.moveTo(x, H);
@@ -57,7 +61,7 @@ function drawParallax(ctx, cameraX, time, glow) {
   }
   ctx.fillStyle = "#251038";
   for (let i = 0; i < 10; i++) {
-    const x = ((i * 220 - cameraX * 0.35) % (W + 220)) - 60;
+    const x = wrap(i * 220 - cameraX * 0.35, W + 220) - 60;
     ctx.fillRect(x, H - 160, 90, 160);
     ctx.fillStyle = "#3a1848";
     ctx.beginPath();
@@ -73,7 +77,7 @@ function drawParallax(ctx, cameraX, time, glow) {
     }
   }
   for (let i = 0; i < 8; i++) {
-    const x = ((i * 260 - cameraX * 0.55 + Math.sin(time + i) * 6) % (W + 80)) + 20;
+    const x = wrap(i * 260 - cameraX * 0.55 + Math.sin(time + i) * 6, W + 80) + 20;
     ctx.strokeStyle = "#6a4020";
     ctx.beginPath();
     ctx.moveTo(x, 0);
