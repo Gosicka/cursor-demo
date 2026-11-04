@@ -1,6 +1,6 @@
-import { input } from "./input.js?v=11";
-import { moveAndCollide } from "./physics.js?v=11";
-import { createPlayer, resetPlayer, updatePlayer } from "./player.js?v=11";
+import { input } from "./input.js?v=12";
+import { moveAndCollide } from "./physics.js?v=12";
+import { createPlayer, resetPlayer, updatePlayer } from "./player.js?v=12";
 import {
   cloneLevel,
   updateMoths,
@@ -10,9 +10,9 @@ import {
   collectCharms,
   hitHazard,
   reachedGoal,
-} from "./entities.js?v=11";
-import { LEVELS } from "./levels.js?v=11";
-import { drawWorld, drawTitle, drawInterlude, drawWin, W, H } from "./render.js?v=11";
+} from "./entities.js?v=12";
+import { LEVELS } from "./levels.js?v=12";
+import { drawWorld, drawTitle, drawInterlude, drawWin, W, H } from "./render.js?v=12";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
