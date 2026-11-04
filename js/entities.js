@@ -1,4 +1,4 @@
-import { aabb } from "./physics.js?v=8";
+import { aabb } from "./physics.js?v=11";
 
 export function cloneLevel(level) {
   return {
@@ -49,20 +49,30 @@ export function updateWisps(wisps, player, dt) {
     const homeMidY = wisp.baseY + wisp.h * 0.5;
     const inX = player.x + player.w > wisp.minX - pad && player.x < wisp.maxX + pad;
     const inY = Math.abs(playerMidY - homeMidY) < reachY;
-    let target = wisp.homeX;
+    const fly = wisp.minY != null && wisp.maxY != null;
+    let targetX = wisp.homeX;
+    let targetY = wisp.baseY;
     wisp.chasing = false;
     if (inX && inY) {
-      target = player.x + player.w * 0.5 - wisp.w * 0.5;
+      targetX = player.x + player.w * 0.5 - wisp.w * 0.5;
       wisp.chasing = true;
+      if (fly) targetY = player.y + player.h * 0.5 - wisp.h * 0.5;
     }
-    const maxX = wisp.maxX - wisp.w;
-    target = Math.max(wisp.minX, Math.min(target, maxX));
-    const dist = target - wisp.x;
+    const limitX = wisp.maxX - wisp.w;
+    targetX = Math.max(wisp.minX, Math.min(targetX, limitX));
     const step = wisp.speed * dt;
-    if (Math.abs(dist) <= step) wisp.x = target;
-    else wisp.x += Math.sign(dist) * step;
-    const bob = wisp.chasing ? 9 : 5;
-    wisp.y = wisp.baseY + Math.sin(wisp.t * (wisp.chasing ? 6 : 3)) * bob;
+    const distX = targetX - wisp.x;
+    if (Math.abs(distX) <= step) wisp.x = targetX;
+    else wisp.x += Math.sign(distX) * step;
+    if (fly) {
+      targetY = Math.max(wisp.minY, Math.min(targetY, wisp.maxY));
+      const distY = targetY - wisp.y;
+      if (Math.abs(distY) <= step) wisp.y = targetY;
+      else wisp.y += Math.sign(distY) * step;
+    } else {
+      const bob = wisp.chasing ? 9 : 5;
+      wisp.y = wisp.baseY + Math.sin(wisp.t * (wisp.chasing ? 6 : 3)) * bob;
+    }
   }
 }
 
