@@ -4,39 +4,105 @@
   padding: 0;
 }
 
+html {
+  color-scheme: dark;
+}
+
 html,
 body {
-  height: 100%;
-  background: #12081c;
-  color: #f4d9a6;
-  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  min-height: 100%;
+  background:
+    radial-gradient(880px 520px at 50% -12%, rgba(132, 78, 186, 0.42), transparent 62%),
+    radial-gradient(720px 460px at 100% 110%, rgba(176, 72, 36, 0.3), transparent 56%),
+    radial-gradient(640px 420px at 0% 90%, rgba(24, 96, 108, 0.22), transparent 52%),
+    #0d0812;
+  color: #f6e7cf;
+  font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 body {
   display: grid;
   place-items: center;
+  padding: 28px 16px 32px;
 }
 
 #frame {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 14px;
+  width: min(96vw, 1120px);
+}
+
+.top {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 8px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
   gap: 12px;
-  width: min(96vw, 1280px);
+  min-width: 0;
+}
+
+.brand h1 {
+  font-family: "Songti SC", "STSong", "PMingLiU", "Noto Serif SC", Palatino, "Palatino Linotype", serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #ffe8c4;
+}
+
+.brand span,
+.meta {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: rgba(246, 222, 186, 0.62);
+  white-space: nowrap;
 }
 
 #game {
   width: 100%;
   height: auto;
   aspect-ratio: 960 / 540;
-  background: #1a0e2c;
-  border-radius: 12px;
-  box-shadow: 0 0 0 2px #f0b45a44, 0 18px 60px #0008;
+  background: #120814;
+  border-radius: 22px;
+  box-shadow:
+    0 0 0 1px rgba(255, 220, 176, 0.32),
+    0 0 0 8px rgba(18, 8, 24, 0.72),
+    0 28px 80px rgba(0, 0, 0, 0.46),
+    0 0 90px rgba(255, 156, 72, 0.14);
   image-rendering: auto;
 }
 
 .hint {
-  font-size: 14px;
-  letter-spacing: 0.04em;
-  opacity: 0.75;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: rgba(246, 231, 207, 0.82);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 224, 186, 0.05);
+  border: 1px solid rgba(255, 214, 170, 0.16);
+}
+
+@media (max-width: 640px) {
+  .top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .brand h1 {
+    font-size: 18px;
+  }
+
+  .hint {
+    text-align: center;
+    line-height: 1.5;
+  }
 }

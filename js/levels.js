@@ -10,7 +10,7 @@ const roofStep = (x, stepUp, w = 140) =>
 export const LEVELS = [
   {
     name: "关卡 1 · 入门灯巷",
-    subtitle: "跳过缺口，躲开纸蛾，跑向牌坊",
+    subtitle: "跳过缺口，躲开纸蛾、灯鬼和纸镖",
     width: 2600,
     spawn: { x: 60, y: 380 },
     platforms: [
@@ -21,7 +21,37 @@ export const LEVELS = [
       roofStep(1680, 52, 180),
       ground(1920, 680),
     ],
-    moths: [{ x: 1280, y: 424, w: 36, h: 22, minX: 1200, maxX: 1550, speed: 70 }],
+    moths: [
+      { x: 700, y: 428, w: 34, h: 20, minX: 660, maxX: 800, speed: 54 },
+      { x: 1280, y: 424, w: 36, h: 22, minX: 1200, maxX: 1550, speed: 70 },
+    ],
+    wisps: [
+      {
+        x: 2080,
+        y: 416,
+        w: 30,
+        h: 26,
+        minX: 1980,
+        maxX: 2260,
+        homeX: 2100,
+        speed: 72,
+        aggroY: 220,
+      },
+    ],
+    spitters: [
+      {
+        x: 220,
+        y: 424,
+        w: 32,
+        h: 36,
+        dir: 1,
+        interval: 2.5,
+        windup: 0.55,
+        shotSpeed: 125,
+        range: 160,
+        shotY: 438,
+      },
+    ],
     charms: [
       { x: 300, y: 390 },
       { x: 980, y: 330 },
@@ -37,7 +67,7 @@ export const LEVELS = [
   },
   {
     name: "关卡 2 · 屋脊夜市",
-    subtitle: "沿着屋檐跳，纸蛾更快了",
+    subtitle: "沿屋檐跳，灯鬼会追，纸偶会吐镖",
     width: 3000,
     spawn: { x: 50, y: 422 },
     platforms: [
@@ -54,8 +84,35 @@ export const LEVELS = [
       ground(2620, 380),
     ],
     moths: [
+      { x: 160, y: 428, w: 34, h: 20, minX: 130, maxX: 210, speed: 58 },
       { x: 1100, y: 384, w: 36, h: 22, minX: 1050, maxX: 1280, speed: 90 },
-      { x: 1900, y: 424, w: 36, h: 22, minX: 1840, maxX: 2080, speed: 100 },
+    ],
+    wisps: [
+      {
+        x: 1920,
+        y: 418,
+        w: 30,
+        h: 24,
+        minX: 1880,
+        maxX: 1970,
+        homeX: 1920,
+        speed: 74,
+        aggroY: 210,
+      },
+    ],
+    spitters: [
+      {
+        x: 2700,
+        y: 424,
+        w: 32,
+        h: 36,
+        dir: 1,
+        interval: 2.2,
+        windup: 0.5,
+        shotSpeed: 140,
+        range: 56,
+        shotY: 436,
+      },
     ],
     charms: [
       { x: 660, y: 360 },
@@ -74,7 +131,7 @@ export const LEVELS = [
   },
   {
     name: "关卡 3 · 灯海尽头",
-    subtitle: "窄踏脚、更快的纸蛾，冲向大红灯笼",
+    subtitle: "窄踏脚。更快的纸蛾、灯鬼与纸镖",
     width: 3400,
     spawn: { x: 48, y: 422 },
     platforms: [
@@ -98,7 +155,34 @@ export const LEVELS = [
       { x: 540, y: 366, w: 36, h: 22, minX: 500, maxX: 700, speed: 110 },
       { x: 1500, y: 358, w: 36, h: 22, minX: 1460, maxX: 1720, speed: 120 },
       { x: 2300, y: 358, w: 36, h: 22, minX: 2240, maxX: 2500, speed: 130 },
-      { x: 2900, y: 424, w: 36, h: 22, minX: 2800, maxX: 3200, speed: 140 },
+      { x: 3140, y: 424, w: 36, h: 22, minX: 3120, maxX: 3190, speed: 140 },
+    ],
+    wisps: [
+      {
+        x: 1924,
+        y: 316,
+        w: 30,
+        h: 24,
+        minX: 1910,
+        maxX: 1960,
+        homeX: 1930,
+        speed: 86,
+        aggroY: 150,
+      },
+    ],
+    spitters: [
+      {
+        x: 2944,
+        y: 424,
+        w: 32,
+        h: 36,
+        dir: 1,
+        interval: 2.1,
+        windup: 0.5,
+        shotSpeed: 140,
+        range: 36,
+        shotY: 436,
+      },
     ],
     charms: [
       { x: 540, y: 360 },

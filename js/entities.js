@@ -1,4 +1,4 @@
-import { aabb } from "./physics.js";
+import { aabb } from "./physics.js?v=8";
 
 export function cloneLevel(level) {
   return {
@@ -7,7 +7,21 @@ export function cloneLevel(level) {
     width: level.width,
     spawn: { ...level.spawn },
     platforms: level.platforms.map((p) => ({ ...p })),
-    moths: level.moths.map((m) => ({ ...m, t: 0, baseY: m.y })),
+    moths: (level.moths || []).map((m) => ({ ...m, t: 0, baseY: m.y })),
+    wisps: (level.wisps || []).map((w) => ({
+      ...w,
+      t: 0,
+      baseY: w.y,
+      homeX: w.homeX ?? w.x,
+      chasing: false,
+    })),
+    spitters: (level.spitters || []).map((s) => ({
+      ...s,
+      t: 0,
+      phase: (s.interval ?? 2.4) * 0.35,
+      telegraph: false,
+    })),
+    projectiles: [],
     charms: level.charms.map((c) => ({ ...c, taken: false, bob: Math.random() * Math.PI * 2 })),
     lanterns: level.lanterns.map((l) => ({ ...l })),
     goal: { ...level.goal },
@@ -24,6 +38,77 @@ export function updateMoths(moths, dt) {
     }
     moth.y = moth.baseY + Math.sin(moth.t) * 6;
   }
+}
+
+export function updateWisps(wisps, player, dt) {
+  for (const wisp of wisps) {
+    wisp.t += dt;
+    const pad = wisp.aggroPad ?? 36;
+    const reachY = wisp.aggroY ?? 200;
+    const playerMidY = player.y + player.h * 0.5;
+    const homeMidY = wisp.baseY + wisp.h * 0.5;
+    const inX = player.x + player.w > wisp.minX - pad && player.x < wisp.maxX + pad;
+    const inY = Math.abs(playerMidY - homeMidY) < reachY;
+    let target = wisp.homeX;
+    wisp.chasing = false;
+    if (inX && inY) {
+      target = player.x + player.w * 0.5 - wisp.w * 0.5;
+      wisp.chasing = true;
+    }
+    const maxX = wisp.maxX - wisp.w;
+    target = Math.max(wisp.minX, Math.min(target, maxX));
+    const dist = target - wisp.x;
+    const step = wisp.speed * dt;
+    if (Math.abs(dist) <= step) wisp.x = target;
+    else wisp.x += Math.sign(dist) * step;
+    const bob = wisp.chasing ? 9 : 5;
+    wisp.y = wisp.baseY + Math.sin(wisp.t * (wisp.chasing ? 6 : 3)) * bob;
+  }
+}
+
+export function updateSpitters(spitters, projectiles, platforms, dt) {
+  let fired = 0;
+  for (const s of spitters) {
+    s.t += dt;
+    const interval = s.interval ?? 2.4;
+    const windup = s.windup ?? 0.48;
+    s.phase += dt;
+    s.telegraph = s.phase >= interval - windup;
+    if (s.phase < interval) continue;
+    s.phase -= interval;
+    const shotW = 16;
+    const shotH = 10;
+    const dir = s.dir >= 0 ? 1 : -1;
+    projectiles.push({
+      x: dir > 0 ? s.x + s.w + 4 : s.x - shotW - 4,
+      y: s.shotY,
+      w: shotW,
+      h: shotH,
+      vx: dir * s.shotSpeed,
+      traveled: 0,
+      maxTravel: s.range,
+    });
+    fired += 1;
+  }
+
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const shot = projectiles[i];
+    const dx = shot.vx * dt;
+    shot.x += dx;
+    shot.traveled += Math.abs(dx);
+    let dead = shot.traveled >= shot.maxTravel;
+    if (!dead) {
+      for (const plat of platforms) {
+        if (plat.oneWay === true) continue;
+        if (aabb(shot, plat)) {
+          dead = true;
+          break;
+        }
+      }
+    }
+    if (dead) projectiles.splice(i, 1);
+  }
+  return fired;
 }
 
 export function updateCharms(charms, dt) {
@@ -46,9 +131,13 @@ export function collectCharms(player, charms) {
   return n;
 }
 
-export function hitMoth(player, moths) {
-  for (const moth of moths) {
-    if (aabb(player, moth)) return true;
+export function hitHazard(player, world) {
+  const groups = [world.moths, world.wisps, world.spitters, world.projectiles];
+  for (const group of groups) {
+    if (!group) continue;
+    for (const box of group) {
+      if (aabb(player, box)) return true;
+    }
   }
   return false;
 }

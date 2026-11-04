@@ -1,16 +1,18 @@
-import { input } from "./input.js?v=7";
-import { moveAndCollide } from "./physics.js?v=7";
-import { createPlayer, resetPlayer, updatePlayer } from "./player.js?v=7";
+import { input } from "./input.js?v=8";
+import { moveAndCollide } from "./physics.js?v=8";
+import { createPlayer, resetPlayer, updatePlayer } from "./player.js?v=8";
 import {
   cloneLevel,
   updateMoths,
+  updateWisps,
+  updateSpitters,
   updateCharms,
   collectCharms,
-  hitMoth,
+  hitHazard,
   reachedGoal,
-} from "./entities.js?v=7";
-import { LEVELS } from "./levels.js?v=7";
-import { drawWorld, drawTitle, drawInterlude, drawWin, W, H } from "./render.js?v=7";
+} from "./entities.js?v=8";
+import { LEVELS } from "./levels.js?v=8";
+import { drawWorld, drawTitle, drawInterlude, drawWin, W, H } from "./render.js?v=8";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -26,6 +28,27 @@ let flash = 0;
 let time = 0;
 let audio;
 let pendingLevel = 0;
+let invuln = 0;
+let snapCamera = false;
+
+function fitCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const displayW = canvas.clientWidth || W;
+  const scale = Math.max(1, Math.min(2.5, (displayW / W) * dpr));
+  const bw = Math.round(W * scale);
+  const bh = Math.round(H * scale);
+  if (canvas.width !== bw || canvas.height !== bh) {
+    canvas.width = bw;
+    canvas.height = bh;
+  }
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  if ("imageSmoothingQuality" in ctx) ctx.imageSmoothingQuality = "high";
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+}
+
+window.addEventListener("resize", fitCanvas);
 
 function unlockAudio() {
   try {
@@ -49,6 +72,7 @@ function sfx(kind) {
     o.connect(g);
     g.connect(audio.destination);
     const now = audio.currentTime;
+    let dur = 0.22;
     if (kind === "jump") {
       o.frequency.setValueAtTime(420, now);
       o.frequency.exponentialRampToValueAtTime(280, now + 0.12);
@@ -59,14 +83,23 @@ function sfx(kind) {
       o.type = "sawtooth";
       o.frequency.setValueAtTime(180, now);
       o.frequency.exponentialRampToValueAtTime(70, now + 0.2);
+    } else if (kind === "shot") {
+      o.type = "triangle";
+      o.frequency.setValueAtTime(920, now);
+      o.frequency.exponentialRampToValueAtTime(420, now + 0.08);
+      dur = 0.1;
     } else {
       o.frequency.setValueAtTime(520, now);
       o.frequency.exponentialRampToValueAtTime(780, now + 0.18);
     }
-    g.gain.setValueAtTime(0.05, now);
-    g.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    g.gain.setValueAtTime(kind === "shot" ? 0.03 : 0.05, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
     o.start(now);
-    o.stop(now + 0.22);
+    o.stop(now + dur);
+    o.onended = () => {
+      o.disconnect();
+      g.disconnect();
+    };
   } catch {
     /* ignore */
   }
@@ -79,14 +112,26 @@ function startLevel(index) {
   cameraX = 0;
   levelCollected = 0;
   flash = 0;
+  invuln = 0;
+  snapCamera = true;
   input.clearPressed();
   scene = "play";
 }
 
+function hurt() {
+  sfx("die");
+  flash = 1;
+  invuln = 0.75;
+  resetPlayer(player, world.spawn);
+  snapCamera = true;
+}
+
 function cameraFollow() {
   const target = player.x - W * 0.38;
-  cameraX += (target - cameraX) * 0.12;
-  cameraX = Math.max(0, Math.min(cameraX, world.width - W));
+  const clamped = Math.max(0, Math.min(target, world.width - W));
+  if (snapCamera || Math.abs(clamped - cameraX) > 220) cameraX = clamped;
+  else cameraX += (clamped - cameraX) * 0.12;
+  snapCamera = false;
 }
 
 let last = performance.now();
@@ -94,7 +139,9 @@ function frame(now) {
   const dt = Math.min(0.033, (now - last) / 1000);
   last = now;
   time += dt;
-  flash = Math.max(0, flash - dt * 3);
+  flash = Math.max(0, flash - dt * 2.2);
+  invuln = Math.max(0, invuln - dt);
+  fitCanvas();
 
   if (scene === "title") {
     if (input.consume("start")) {
@@ -112,6 +159,9 @@ function frame(now) {
     if (jumped) sfx("jump");
     moveAndCollide(player, world.platforms, dt);
     updateMoths(world.moths, dt);
+    updateWisps(world.wisps, player, dt);
+    const shots = updateSpitters(world.spitters, world.projectiles, world.platforms, dt);
+    if (shots) sfx("shot");
     updateCharms(world.charms, dt);
     const got = collectCharms(player, world.charms);
     if (got) {
@@ -119,11 +169,8 @@ function frame(now) {
       collectedTotal += got;
       sfx("charm");
     }
-    if (player.y > H + 80 || hitMoth(player, world.moths)) {
-      sfx("die");
-      flash = 1;
-      resetPlayer(player, world.spawn);
-    }
+    player.invuln = invuln;
+    if (player.y > H + 80 || (invuln <= 0 && hitHazard(player, world))) hurt();
     if (reachedGoal(player, world.goal)) {
       sfx("goal");
       input.clearPressed();
