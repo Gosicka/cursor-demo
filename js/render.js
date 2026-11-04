@@ -237,7 +237,7 @@ function drawGoal(ctx, goal, time) {
   ctx.restore();
   ctx.fillStyle = "#f6e2b8";
   ctx.font = "12px sans-serif";
-  ctx.fillText("牌坊", goal.x + 16, goal.y - 8);
+  ctx.fillText("终点", goal.x + 16, goal.y - 8);
 }
 
 function drawPlayer(ctx, player) {

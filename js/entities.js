@@ -1,4 +1,4 @@
-import { aabb } from "./physics.js?v=11";
+import { aabb } from "./physics.js?v=12";
 
 export function cloneLevel(level) {
   return {
